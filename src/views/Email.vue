@@ -1,6 +1,6 @@
 <template>
   <div class="contact-form-container">
-    <h2>Contact us</h2>
+    <h2>Give a message to the emigrants</h2>
     <form @submit.prevent="submitForm" class="contact-form">
       <div class="form-group">
         <label for="name">Name:</label>

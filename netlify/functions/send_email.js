@@ -17,7 +17,7 @@ exports.handler = async function(event, context) {
     // 从环境变量获取发件人邮箱和收件人邮箱 (你的邮箱)
     // 记得在 Netlify UI 中配置这些环境变量
     const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL;
-    const TO_EMAIL = process.env.CONTACT_FORM_RECIPIENT_EMAIL; // 你的收件邮箱
+    // const TO_EMAIL = process.env.CONTACT_FORM_RECIPIENT_EMAIL; // 你的收件邮箱
     if (!FROM_EMAIL || !TO_EMAIL || !process.env.SENDGRID_API_KEY) {
       console.error("Missing SendGrid environment variables.");
       return {
@@ -36,15 +36,10 @@ exports.handler = async function(event, context) {
     }
     // 构建邮件内容
     const msg = {
-      to: TO_EMAIL, // 你的收件邮箱
+      to: data.email, // 你的收件邮箱
       from: FROM_EMAIL, // 经过 SendGrid 验证的发件人邮箱
-      replyTo: data.email, // 方便你直接回复用户
-      subject: `联系表单: ${data.subject}`,
+      subject: data.subject,
       text: `
-        姓名: ${data.name}
-        邮箱: ${data.email}
-        主题: ${data.subject}
-        --------------------
         消息:
         ${data.message}
       `,
