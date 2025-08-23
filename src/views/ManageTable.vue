@@ -1,22 +1,22 @@
 <template>
   <div class="users-container">
-    <h1 class="page-title">用户管理</h1>
+    <h1 class="page-title">User Management</h1>
     
     <div v-if="loading" class="loading-state">
       <div class="spinner"></div> <!-- 添加一个简单的加载动画 -->
-      正在加载用户数据...
+      Loading...
     </div>
     
     <div v-if="error" class="error-state">{{ error }}</div>
     <div v-if="!loading && users.length > 0">
       <!-- 搜索框 -->
       <div class="search-wrapper">
-        <label for="global-search" class="visually-hidden">全局搜索</label>
+        <label for="global-search" class="visually-hidden">Search</label>
         <input 
           id="global-search"
           type="text" 
           v-model="searchValue" 
-          placeholder="按邮箱、角色、性别或原因搜索..."
+          placeholder="Acording to email, role, gender or reason..."
           class="search-input"
         >
         <i class="search-icon">🔍</i> <!-- 增加一个搜索图标 -->
@@ -50,15 +50,15 @@
         <!-- #empty-message slot for custom empty state feedback -->
         <template #empty-message>
           <div class="empty-data-message">
-            <p>没有找到任何匹配的用户数据。</p>
-            <button v-if="searchValue" @click="searchValue=''" class="clear-search-btn">清除搜索</button>
+            <p>There is no user data in the database.</p>
+            <button v-if="searchValue" @click="searchValue=''" class="clear-search-btn">Clear Search</button>
           </div>
         </template>
       </EasyDataTable>
     </div>
     
     <div v-if="!loading && users.length === 0" class="empty-state">
-      <p>数据库中没有用户数据。</p>
+      <p>There is no user data in the database.</p>
     </div>
   </div>
 </template>

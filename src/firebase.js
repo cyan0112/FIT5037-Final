@@ -3,14 +3,14 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 // TODO: 将这里替换成您自己的 Firebase 项目配置
-const firebaseConfig = {
-     apiKey: import.meta.env.VITE_FIREBASE_API_KEY || process.env.VUE_APP_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || process.env.VUE_APP_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || process.env.VUE_APP_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || process.env.VUE_APP_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || process.env.VUE_APP_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || process.env.VUE_APP_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || process.env.VUE_APP_FIREBASE_MEASUREMENT_ID
+ const firebaseConfig = {
+    apiKey: "AIzaSyAyHqK_aZz02z9M69ta_sQv71Ps1ew8k_4",
+    authDomain: "assignment-final-c931e.firebaseapp.com",
+    projectId: "assignment-final-c931e",
+    storageBucket: "assignment-final-c931e.firebasestorage.app",
+    messagingSenderId: "1039321637375",
+    appId: "1:1039321637375:web:2948242cf4c82453acc7ca",
+    measurementId: "G-KYDNCB4XQY"
   };
 // 初始化 Firebase 应用
 const app = initializeApp(firebaseConfig);
