@@ -19,6 +19,7 @@
     <router-link class="header_header_link" to="/donation">Donation</router-link>
     <router-link class="header_header_link" to="/table">Tables</router-link>
     <router-link class="header_header_link" to="/geo">Map</router-link>
+    <router-link class="header_header_link" to="/email">Email</router-link>
   </div>
 </template>
 

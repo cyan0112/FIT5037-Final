@@ -8,6 +8,7 @@ import Login from '@/views/Login.vue'
 import Register from '@/views/Register.vue'
 import Table from '@/views/ManageTable.vue'
 import Map from '@/views/Geo.vue'
+import Email from '@/views/Email.vue'
 
 
 const routes = [
@@ -19,7 +20,8 @@ const routes = [
             { path: '/about', component: About },
             { path: '/donation', component: Donation },
             { path: '/table', component: Table},
-            { path: '/geo', component: Map}
+            { path: '/geo', component: Map},
+            { path: '/email', component: Email}
         ] },
     { path: '/login', component: Login },
     { path: '/register', component: Register }
