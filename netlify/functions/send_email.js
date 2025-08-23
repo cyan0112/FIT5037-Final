@@ -18,7 +18,7 @@ exports.handler = async function(event, context) {
     // 记得在 Netlify UI 中配置这些环境变量
     const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL;
     // const TO_EMAIL = process.env.CONTACT_FORM_RECIPIENT_EMAIL; // 你的收件邮箱
-    if (!FROM_EMAIL || !TO_EMAIL || !process.env.SENDGRID_API_KEY) {
+    if (!FROM_EMAIL || !process.env.SENDGRID_API_KEY) {
       console.error("Missing SendGrid environment variables.");
       return {
         statusCode: 500,
