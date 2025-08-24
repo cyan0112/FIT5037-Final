@@ -1,48 +1,48 @@
 <template>
   <div class="ai-generator-container">
     <div class="header-section">
-      <h1 class="page-title">AI 内容生成器</h1>
-      <p class="page-subtitle">使用 Google Gemini API 智能生成内容</p>
+      <h1 class="page-title">AI Content Generator</h1>
+      <p class="page-subtitle">Intelligent content creation using Google Gemini API</p>
     </div>
 
     <div class="generator-card">
       <div class="input-section">
         <div class="form-group">
-          <label for="prompt">输入提示词</label>
+          <label for="prompt">Input Prompt</label>
           <textarea 
             id="prompt"
             v-model="prompt"
             class="prompt-input"
-            placeholder="描述您想要生成的内容..."
+            placeholder="Describe what you want to generate..."
             rows="4"
           ></textarea>
         </div>
 
         <div class="form-group">
-          <label for="contentType">内容类型</label>
+          <label for="contentType">Content Type</label>
           <select v-model="contentType" class="content-type-select">
-            <option value="story">故事</option>
-            <option value="article">文章</option>
-            <option value="email">邮件</option>
-            <option value="social">社交媒体内容</option>
-            <option value="code">代码</option>
-            <option value="other">其他</option>
+            <option value="story">Story</option>
+            <option value="article">Article</option>
+            <option value="email">Email</option>
+            <option value="social">Social Media Content</option>
+            <option value="code">Code</option>
+            <option value="other">Other</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label for="tone">语气风格</label>
+          <label for="tone">Tone Style</label>
           <select v-model="tone" class="tone-select">
-            <option value="professional">专业</option>
-            <option value="casual">轻松</option>
-            <option value="creative">创意</option>
-            <option value="formal">正式</option>
-            <option value="friendly">友好</option>
+            <option value="professional">Professional</option>
+            <option value="casual">Casual</option>
+            <option value="creative">Creative</option>
+            <option value="formal">Formal</option>
+            <option value="friendly">Friendly</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label for="maxTokens">生成长度</label>
+          <label for="maxTokens">Generation Length</label>
           <input 
             type="range" 
             v-model.number="maxTokens" 
@@ -51,7 +51,7 @@
             step="50"
             class="token-slider"
           >
-          <span class="token-value">{{ maxTokens }} 字符</span>
+          <span class="token-value">{{ maxTokens }} characters</span>
         </div>
       </div>
 
@@ -61,15 +61,15 @@
           :disabled="isLoading || !prompt.trim()"
           class="generate-btn"
         >
-          <span v-if="!isLoading">🚀 生成内容</span>
-          <span v-else>⏳ 生成中...</span>
+          <span v-if="!isLoading">🚀 Generate Content</span>
+          <span v-else>⏳ Generating...</span>
         </button>
         
         <button 
           @click="clearAll" 
           class="clear-btn"
         >
-          🗑️ 清空内容
+          🗑️ Clear All
         </button>
       </div>
 
@@ -79,9 +79,9 @@
 
       <div v-if="generatedContent" class="result-section">
         <div class="result-header">
-          <h3>生成结果</h3>
+          <h3>Generated Result</h3>
           <button @click="copyToClipboard" class="copy-btn">
-            📋 {{ copied ? '已复制' : '复制内容' }}
+            📋 {{ copied ? 'Copied' : 'Copy Content' }}
           </button>
         </div>
         <div class="generated-content">
@@ -90,7 +90,7 @@
       </div>
 
       <div v-if="recentGenerations.length > 0" class="history-section">
-        <h3>最近生成记录</h3>
+        <h3>Recent Generation History</h3>
         <div class="history-list">
           <div 
             v-for="(item, index) in recentGenerations" 
@@ -111,7 +111,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 
-// 响应式数据
+// Reactive data
 const prompt = ref('')
 const contentType = ref('story')
 const tone = ref('professional')
@@ -122,11 +122,11 @@ const error = ref('')
 const copied = ref(false)
 const recentGenerations = ref([])
 
-// Gemini API 配置
-const GEMINI_API_KEY = 'AIzaSyB3KMAF-mESi2KHvHM3ite0b8t-0zJc9vU' // 请替换为您的实际API密钥
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent'
+// Gemini API configuration
+const GEMINI_API_KEY = 'AIzaSyB3KMAF-mESi2KHvHM3ite0b8t-0zJc9vU' // Replace with your actual API key
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent' // 使用更稳定的1.5-flash版本
 
-// 生成内容
+// Generate content
 const generateContent = async () => {
   if (!prompt.value.trim()) return
   
@@ -137,12 +137,12 @@ const generateContent = async () => {
     const requestBody = {
       contents: [{
         parts: [{
-          text: `请根据以下要求生成内容：
-          类型：${contentType.value}
-          语气：${tone.value}
-          最大长度：${maxTokens.value}字符
+          text: `Please generate content based on the following requirements:
+          Type: ${contentType.value}
+          Tone: ${tone.value}
+          Maximum length: ${maxTokens.value} characters
           
-          提示词：${prompt.value}`
+          Prompt: ${prompt.value}`
         }]
       }],
       generationConfig: {
@@ -162,26 +162,140 @@ const generateContent = async () => {
     })
 
     if (!response.ok) {
-      throw new Error(`API请求失败: ${response.status}`)
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(`API request failed: ${response.status} - ${errorData.error?.message || response.statusText}`)
     }
 
     const data = await response.json()
+    console.log('完整API响应:', data)
+    console.log('响应结构:', JSON.stringify(data, null, 2))
     
-    if (data.candidates && data.candidates[0].content.parts[0].text) {
-      generatedContent.value = data.candidates[0].content.parts[0].text
+    // 更详细的调试信息
+    if (data.candidates) {
+      console.log('候选人数量:', data.candidates.length)
+      console.log('第一个候选人:', data.candidates[0])
+    }
+    
+    let generatedText = ''
+    
+    // 策略1: 标准Gemini响应结构
+    if (data.candidates && Array.isArray(data.candidates) && data.candidates.length > 0) {
+      const candidate = data.candidates[0]
+      console.log('处理候选人:', candidate)
+      
+      if (candidate.finishReason && candidate.finishReason !== 'STOP') {
+        console.warn('完成原因:', candidate.finishReason)
+      }
+      
+      if (candidate.content && candidate.content.parts && Array.isArray(candidate.content.parts)) {
+        console.log('内容部分:', candidate.content.parts)
+        
+        // 检查所有部分
+        candidate.content.parts.forEach((part, index) => {
+          console.log(`部分 ${index}:`, part)
+          if (part.text) {
+            console.log(`部分 ${index} 文本:`, part.text)
+            generatedText += part.text
+          } else {
+            console.log(`部分 ${index} 不是文本类型`, part)
+          }
+        })
+      } else {
+        console.log('内容结构异常:', {
+          hasContent: !!candidate.content,
+          hasParts: !!(candidate.content && candidate.content.parts),
+          partsType: candidate.content && candidate.content.parts ? typeof candidate.content.parts : 'N/A'
+        })
+      }
+    }
+    
+    // 策略2: 处理空候选人的情况
+    else if (data.candidates && data.candidates.length === 0) {
+      console.log('候选人数组为空')
+    }
+    
+    // 策略3: 检查是否有错误信息
+    if (data.error) {
+      console.error('API错误:', data.error)
+      throw new Error(`API错误: ${data.error.message || JSON.stringify(data.error)}`)
+    }
+    
+    // 策略4: 检查内容阻止
+    if (data.promptFeedback) {
+      console.log('提示反馈:', data.promptFeedback)
+      if (data.promptFeedback.blockReason) {
+        throw new Error(`内容被阻止: ${data.promptFeedback.blockReason}`)
+      }
+      if (data.promptFeedback.safetyRatings) {
+        console.log('安全评级:', data.promptFeedback.safetyRatings)
+      }
+    }
+    
+    // 策略5: 检查其他可能的响应结构
+    const possibleTextPaths = [
+      'candidates[0].content.parts[0].text',
+      'candidates[0].text',
+      'text',
+      'result',
+      'output'
+    ]
+    
+    possibleTextPaths.forEach(path => {
+      const value = path.split('.').reduce((obj, key) => {
+        if (key.includes('[')) {
+          const [k, i] = key.replace(']', '').split('[')
+          return obj && obj[k] ? obj[k][parseInt(i)] : undefined
+        }
+        return obj ? obj[key] : undefined
+      }, data)
+      
+      if (value && typeof value === 'string') {
+        console.log(`在路径 ${path} 找到文本:`, value)
+        generatedText = value
+      }
+    })
+    
+    console.log('最终生成的文本:', generatedText)
+    
+    if (generatedText && generatedText.trim()) {
+      generatedContent.value = generatedText.trim()
       saveToHistory()
     } else {
-      throw new Error('无法生成内容，请重试')
+      // 提供更详细的错误信息
+      const debugInfo = {
+        hasCandidates: !!(data.candidates && data.candidates.length > 0),
+        candidatesLength: data.candidates ? data.candidates.length : 0,
+        hasError: !!data.error,
+        hasPromptFeedback: !!data.promptFeedback,
+        keys: Object.keys(data)
+      }
+      console.error('无法获取有效内容，调试信息:', debugInfo)
+      throw new Error(`无法从API获取有效内容。响应结构: ${JSON.stringify(debugInfo)}`)
     }
+    
   } catch (err) {
-    error.value = err.message || '生成失败，请检查网络连接和API密钥'
-    console.error('生成错误:', err)
+    console.error('Generation error:', err)
+    
+    // Enhanced error handling
+    if (err.name === 'TypeError' && err.message.includes('fetch')) {
+      error.value = 'Network error. Please check your internet connection.'
+    } else if (err.message.includes('API key') || err.message.includes('403')) {
+      error.value = 'Invalid API key or insufficient permissions. Please check your Gemini API key.'
+    } else if (err.message.includes('400')) {
+      error.value = 'Invalid request format. Please check your prompt and parameters.'
+    } else if (err.message.includes('429')) {
+      error.value = 'Rate limit exceeded. Please try again later.'
+    } else if (err.message.includes('500') || err.message.includes('503')) {
+      error.value = 'Server error. Please try again later.'
+    } else {
+      error.value = err.message || 'Generation failed. Please try again with a different prompt.'
+    }
   } finally {
     isLoading.value = false
   }
 }
 
-// 保存到历史记录
+// Save to history
 const saveToHistory = () => {
   const newItem = {
     prompt: prompt.value,
@@ -193,16 +307,16 @@ const saveToHistory = () => {
   
   recentGenerations.value.unshift(newItem)
   
-  // 限制历史记录数量
+  // Limit history records
   if (recentGenerations.value.length > 5) {
     recentGenerations.value = recentGenerations.value.slice(0, 5)
   }
   
-  // 保存到本地存储
+  // Save to local storage
   localStorage.setItem('aiGeneratorHistory', JSON.stringify(recentGenerations.value))
 }
 
-// 从历史记录加载
+// Load from history
 const loadFromHistory = (item) => {
   prompt.value = item.prompt
   contentType.value = item.contentType
@@ -210,37 +324,37 @@ const loadFromHistory = (item) => {
   generatedContent.value = item.content
 }
 
-// 清空所有内容
+// Clear all content
 const clearAll = () => {
   prompt.value = ''
   generatedContent.value = ''
   error.value = ''
 }
 
-// 复制到剪贴板
+// Copy to clipboard
 const copyToClipboard = async () => {
   try {
     await navigator.clipboard.writeText(generatedContent.value)
     copied.value = true
     setTimeout(() => copied.value = false, 2000)
   } catch (err) {
-    error.value = '复制失败，请手动复制'
+    error.value = 'Copy failed, please copy manually'
   }
 }
 
-// 格式化时间
+// Format time
 const formatTime = (timestamp) => {
-  return new Date(timestamp).toLocaleString('zh-CN')
+  return new Date(timestamp).toLocaleString('en-US')
 }
 
-// 加载历史记录
+// Load history records
 onMounted(() => {
   const saved = localStorage.getItem('aiGeneratorHistory')
   if (saved) {
     try {
       recentGenerations.value = JSON.parse(saved)
     } catch (err) {
-      console.error('加载历史记录失败:', err)
+      console.error('Failed to load history:', err)
     }
   }
 })
