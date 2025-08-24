@@ -93,7 +93,7 @@
             // 如果有附件，就包含附件数据
             attachments: this.encodedAttachments,
           };
-          const response = await fetch('/api/_email', {
+          const response = await fetch('https://email.cyan0112.workers.dev/', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
