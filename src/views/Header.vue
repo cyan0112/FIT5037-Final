@@ -20,6 +20,7 @@
     <router-link class="header_header_link" to="/table">Tables</router-link>
     <router-link class="header_header_link" to="/geo">Map</router-link>
     <router-link class="header_header_link" to="/email">Email</router-link>
+    <router-link class="header_header_link" to="/ai">AI</router-link>
   </div>
 </template>
 
