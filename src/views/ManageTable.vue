@@ -9,18 +9,24 @@
     
     <div v-if="error" class="error-state">{{ error }}</div>
     <div v-if="!loading && users.length > 0">
-      <!-- 搜索框 -->
-      <div class="search-wrapper">
-        <label for="global-search" class="visually-hidden">Search</label>
-        <input 
-          id="global-search"
-          type="text" 
-          v-model="searchValue" 
-          placeholder="Acording to email, role, gender or reason..."
-          class="search-input"
-        >
-        <i class="search-icon">🔍</i> <!-- 增加一个搜索图标 -->
+      <!-- 搜索和导出区域 -->
+      <div class="controls-wrapper">
+        <div class="search-wrapper">
+          <label for="global-search" class="visually-hidden">Search</label>
+          <input 
+            id="global-search"
+            type="text" 
+            v-model="searchValue" 
+            placeholder="Acording to email, role, gender or reason..."
+            class="search-input"
+          >
+          <i class="search-icon">🔍</i> <!-- 增加一个搜索图标 -->
+        </div>
+        <button @click="exportToCSV" class="export-btn" :disabled="users.length === 0">
+          📊 Export CSV
+        </button>
       </div>
+      
       <!-- 数据表格组件 -->
       <EasyDataTable
         :headers="headers"
@@ -62,10 +68,12 @@
     </div>
   </div>
 </template>
+
 <script setup>
 import { ref, onMounted } from 'vue';
 import { collection, query, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '@/firebase.js'; 
+
 // 1. 定义表头 (Headers) - 调整宽度以优化空间
 const headers = ref([
   { text: "邮箱", value: "email", sortable: true, width: 180 }, // 邮箱可能较长，给足宽度
@@ -74,11 +82,13 @@ const headers = ref([
   { text: "加入原因", value: "reason", sortable: true, width: 250 }, // 原因可能很长
   { text: "注册时间", value: "createdAt", sortable: true, width: 180 }, // 时间戳也相对长
 ]);
+
 // 2. 初始化响应式状态
 const users = ref([]);        
 const loading = ref(true);    
 const error = ref(null);      
 const searchValue = ref('');  
+
 // 3. 辅助函数：截断长文本
 const truncateText = (text, maxLength) => {
   if (!text) return '';
@@ -87,6 +97,7 @@ const truncateText = (text, maxLength) => {
   }
   return text;
 };
+
 // 辅助函数：格式化日期时间
 const formatDateTime = (timestamp) => {
   // 兼容 Firestore Timestamp 对象和普通字符串
@@ -109,6 +120,62 @@ const formatDateTime = (timestamp) => {
     hour: '2-digit', minute: '2-digit', second: '2-digit'
   });
 };
+
+// CSV导出函数
+const exportToCSV = () => {
+  if (users.value.length === 0) {
+    alert('No data to export');
+    return;
+  }
+
+  // 定义CSV标题行
+  const csvHeaders = ['ID', 'Email', 'Role', 'Gender', 'Reason', 'Registration Time'];
+  
+  // 转换数据为CSV格式
+  const csvData = users.value.map((user, index) => {
+    const row = [
+      index + 1,
+      user.email || '',
+      user.role || '',
+      user.gender || '',
+      user.reason || '',
+      formatDateTime(user.createdAt) || ''
+    ];
+    
+    // 处理包含逗号、引号或换行符的字段
+    return row.map(field => {
+      const stringField = String(field || '');
+      if (stringField.includes(',') || stringField.includes('"') || stringField.includes('\n')) {
+        return `"${stringField.replace(/"/g, '""')}"`;
+      }
+      return stringField;
+    });
+  });
+
+  // 组合CSV内容
+  const csvContent = [csvHeaders, ...csvData]
+    .map(row => row.join(','))
+    .join('\n');
+
+  // 创建Blob对象
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  
+  // 创建下载链接
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  link.setAttribute('href', url);
+  link.setAttribute('download', `user_data_${new Date().toISOString().slice(0, 10)}.csv`);
+  link.style.visibility = 'hidden';
+  
+  // 触发下载
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  // 清理
+  URL.revokeObjectURL(url);
+};
+
 // 4. 定义从 Firestore 加载数据的函数
 const loadUsers = async () => {
   loading.value = true;
@@ -137,11 +204,13 @@ const loadUsers = async () => {
     loading.value = false;
   }
 };
+
 // 5. 在组件挂载时调用加载函数
 onMounted(() => {
   loadUsers();
 });
 </script>
+
 <style scoped>
 /* 整体容器样式 */
 .users-container {
@@ -152,6 +221,7 @@ onMounted(() => {
   border-radius: 12px; 
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); 
 }
+
 .page-title {
   font-size: 2.2em;
   color: #333;
@@ -159,16 +229,26 @@ onMounted(() => {
   text-align: center;
   font-weight: 600;
 }
+
+/* 控制区域样式 */
+.controls-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
 /* 搜索框样式 */
 .search-wrapper {
   position: relative;
-  margin-bottom: 30px;
   display: flex;
   align-items: center;
-  max-width: 500px; 
-  margin-left: auto; 
-  margin-right: auto;
+  flex: 1;
+  max-width: 500px;
 }
+
 .search-input {
   width: 100%;
   padding: 12px 40px 12px 15px; 
@@ -178,11 +258,13 @@ onMounted(() => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
 }
+
 .search-input:focus {
   outline: none;
   border-color: #1ABC9C;
   box-shadow: 0 0 0 3px rgba(26, 188, 156, 0.2);
 }
+
 .search-icon {
   position: absolute;
   right: 15px;
@@ -191,6 +273,36 @@ onMounted(() => {
   top: 50%;
   transform: translateY(-50%);
 }
+
+/* 导出按钮样式 */
+.export-btn {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.export-btn:hover:not(:disabled) {
+  background-color: #218838;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.export-btn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -201,58 +313,27 @@ onMounted(() => {
   clip: rect(0, 0, 0, 0);
   border: 0;
 }
-/* EasyDataTable 组件的全局样式覆盖，特别是针对表头文本方向 */
+
+/* EasyDataTable 组件的全局样式覆盖 */
 .styled-data-table {
   /* 表格整体边框 */
   --easy-table-border: 1px solid #e0e0e0;
-  /* 表头背景色，使用与导航栏类似的颜色 */
-  --easy-table-header-background-color: #1ABC9C; /* 翠绿色 */
-  --easy-table-header-font-color: #ffffff; /* 白色字体 */
+  /* 表头背景色 */
+  --easy-table-header-background-color: #1ABC9C;
+  --easy-table-header-font-color: #ffffff;
   --easy-table-header-font-size: 15px;
-  --easy-table-header-height: 50px; /* 增加表头高度 */
-  --easy-table-header-item-padding: 15px 10px; /* 增加表头内边距 */
+  --easy-table-header-height: 50px;
+  --easy-table-header-item-padding: 15px 10px;
   /* 行样式 */
   --easy-table-body-row-height: 48px;
   --easy-table-body-row-font-color: #444;
   --easy-table-body-row-font-size: 14px;
-  --easy-table-body-row-hover-background-color: #f5fcfb; /* 悬停颜色 */
-  --easy-table-body-row-border-color: #eee; /* 行底部边框 */
+  --easy-table-body-row-hover-background-color: #f5fcfb;
+  --easy-table-body-row-border-color: #eee;
   /* 单元格内边距 */
-  --easy-table-row-item-padding: 12px 10px; 
-  /* 分页按钮颜色 */
-  --easy-table-footer-background-color: #fcfcfc;
-  --easy-table-footer-font-color: #555;
-  --easy-table-footer-font-size: 13px;
-  --easy-table-footer-height: 50px;
-  --easy-table-footer-padding: 0 10px;
-  --easy-table-rows-per-page-selector-width: 70px;
-  --easy-table-rows-per-page-selector-option-hover-background-color: #e3f2fd;
-  --easy-table-scrollbar-track-color: #f1f1f1;
-  --easy-table-scrollbar-thumb-color: #c1c1c1;
-  --easy-table-scrollbar-thumb-hover-color: #a8a8a8;
-  /* ***** 关键修改：强制表头文字横向排布并优化空间 ***** */
-  /* 针对表头单元格的样式 */
-  /* EasyDataTable 的表头项类名通常是 .easy-table__header-item */
-  /* 请注意：EasyDataTable的内部结构可能略有不同，以下是根据常见约定和经验推测的，
-     如果仍然无效，可能需要检查浏览器开发者工具来确认实际的CSS类名。 */
-  & :deep(.easy-table__header-item) {
-    display: flex; /* 使用 flex 布局确保内容居中且不换行 */
-    align-items: center; /* 垂直居中 */
-    justify-content: center; /* 水平居中 */
-    white-space: nowrap; /* 强制内容不换行 */
-    /* 显式重置 writing-mode，确保是横向文本 */
-    /* 这可能是解决垂直排布最直接的方法 */
-    writing-mode: horizontal-tb !important; 
-    text-orientation: mixed !important; /* 确保字符方向正常 */
-    padding: 0 8px; /* 调整内边距，使其更紧凑 */
-  }
-  /* 针对表头文字容器，如果需要 */
-  & :deep(.easy-table__header-text) {
-    white-space: nowrap;
-    writing-mode: horizontal-tb !important;
-    text-orientation: mixed !important;
-  }
+  --easy-table-row-item-padding: 12px 10px;
 }
+
 /* 角色徽章样式 */
 .role-badge {
   display: inline-flex;
@@ -263,26 +344,29 @@ onMounted(() => {
   font-size: 0.85em;
   font-weight: 600;
   color: white;
-  text-transform: uppercase; 
-  min-width: 70px; 
+  text-transform: uppercase;
+  min-width: 70px;
 }
+
 /* 不同角色的背景色 */
 .role-user { background-color: #3498db; }
 .role-admin { background-color: #e74c3c; }
 .role-editor { background-color: #f39c12; color: #333; }
 .role-guest { background-color: #95a5a6; }
+
 /* "加入原因"列的内容样式 */
 .reason-cell {
   display: -webkit-box;
-  -webkit-line-clamp: 2; 
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  cursor: help; 
+  cursor: help;
   line-height: 1.4;
-  height: 2.8em; 
-  max-width: 100%; 
+  height: 2.8em;
+  max-width: 100%;
 }
+
 /* 加载、错误和空状态样式 */
 .loading-state, .error-state, .empty-state {
   text-align: center;
@@ -293,11 +377,13 @@ onMounted(() => {
   border-radius: 8px;
   margin-top: 30px;
 }
+
 .error-state {
   color: #c0392b;
   background-color: #fdeaea;
   border: 1px solid #e0b4b4;
 }
+
 .spinner {
   border: 4px solid rgba(0, 0, 0, 0.1);
   border-left-color: #1ABC9C;
@@ -309,15 +395,18 @@ onMounted(() => {
   vertical-align: middle;
   margin-right: 10px;
 }
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
 .empty-data-message {
   padding: 20px;
   font-size: 1.1em;
   color: #777;
 }
+
 .clear-search-btn {
   background-color: #1ABC9C;
   color: white;
@@ -328,7 +417,24 @@ onMounted(() => {
   margin-top: 10px;
   transition: background-color 0.3s ease;
 }
+
 .clear-search-btn:hover {
   background-color: #16a085;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .controls-wrapper {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .search-wrapper {
+    max-width: 100%;
+  }
+  
+  .export-btn {
+    align-self: flex-end;
+  }
 }
 </style>
